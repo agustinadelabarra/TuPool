@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nuevo TuPool</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --azul: #2E6DA4; --azul-light: #EBF4FB; --azul-dark: #1E4F7A;
+    --verde: #3D7A5A; --verde-light: #E8F4EE; --verde-dark: #2A5C40;
+    --fondo: #F2F6F4; --texto: #2D2D2D; --texto-soft: #6B6B6B;
+    --borde: #D0DDD8; --blanco: #FFFFFF;
+    --shadow: 0 2px 12px rgba(46,109,164,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--fondo); color: var(--texto); min-height: 100vh; padding: 0 0 48px; }
+
+  .page-header { background: var(--azul); padding: 32px 20px 24px; text-align: center; color: var(--blanco); }
+  .page-header h1 { font-size: 26px; font-weight: 700; margin-bottom: 4px; }
+  .page-header p { font-size: 14px; opacity: 0.85; font-weight: 500; }
+
+  .content { padding: 20px 16px; max-width: 480px; margin: 0 auto; }
+
+  .card { background: var(--blanco); border-radius: 16px; padding: 20px; margin-bottom: 14px; box-shadow: var(--shadow); border: 1px solid var(--borde); }
+
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font-size: 12px; font-weight: 600; color: var(--texto-soft); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 5px; }
+  .field input, .field select { width: 100%; padding: 11px 13px; border: 1.5px solid var(--borde); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--texto); background: var(--fondo); outline: none; transition: border-color 0.2s; }
+  .field input:focus, .field select:focus { border-color: var(--azul); background: var(--blanco); }
+  .field input::placeholder { color: #AAB8B2; }
+
+  /* Días */
+  .dias-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .dia-check { position: relative; }
+  .dia-check input[type="checkbox"] { position: absolute; opacity: 0; width: 0; height: 0; }
+  .dia-label { display: flex; align-items: center; justify-content: center; height: 40px; border: 1.5px solid var(--borde); border-radius: 10px; font-size: 12px; font-weight: 600; color: var(--texto-soft); background: var(--fondo); cursor: pointer; transition: all 0.2s; }
+  .dia-check input[type="checkbox"]:checked + .dia-label { border-color: var(--azul); background: var(--azul-light); color: var(--azul-dark); }
+
+  /* Familias */
+  .seccion-label { font-size: 12px; font-weight: 600; color: var(--texto-soft); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 10px; display: block; }
+  .familia-item { border: 1.5px solid var(--borde); border-radius: 12px; padding: 14px; margin-bottom: 10px; background: var(--fondo); position: relative; }
+  .familia-item:last-child { margin-bottom: 0; }
+  .familia-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .familia-numero { font-size: 11px; font-weight: 600; color: var(--azul); text-transform: uppercase; letter-spacing: 0.08em; }
+  .btn-quitar { background: none; border: none; color: var(--texto-soft); font-size: 18px; cursor: pointer; padding: 0; line-height: 1; }
+  .btn-quitar:hover { color: #c0392b; }
+  .familia-fields { display: flex; flex-direction: column; gap: 8px; }
+  .familia-fields input { width: 100%; padding: 10px 12px; border: 1.5px solid var(--borde); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--texto); background: var(--blanco); outline: none; transition: border-color 0.2s; }
+  .familia-fields input:focus { border-color: var(--azul); }
+  .familia-fields input::placeholder { color: #AAB8B2; }
+  .dir-row { display: flex; gap: 8px; align-items: center; }
+  .dir-row input { flex: 1; }
+  .btn-maps { padding: 10px 12px; background: var(--verde-light); border: 1.5px solid var(--verde); border-radius: 10px; color: var(--verde-dark); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .btn-maps:hover { background: var(--verde); color: var(--blanco); }
+  .coords-tag { font-size: 11px; color: var(--verde-dark); background: var(--verde-light); padding: 4px 8px; border-radius: 6px; margin-top: 4px; display: none; }
+  .coords-tag.visible { display: block; }
+
+  .btn-agregar { width: 100%; padding: 12px; background: var(--blanco); border: 1.5px dashed var(--azul); border-radius: 12px; color: var(--azul); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
+  .btn-agregar:hover { background: var(--azul-light); }
+
+  .btn-crear { width: 100%; padding: 16px; background: var(--azul); color: var(--blanco); border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s, transform 0.1s; margin-top: 4px; }
+  .btn-crear:hover { background: var(--azul-dark); }
+  .btn-crear:active { transform: scale(0.98); }
+
+  /* Pantalla éxito */
+  .link-screen { display: none; padding: 24px 16px 48px; max-width: 480px; margin: 0 auto; }
+  .link-screen.visible { display: block; }
+  .panfleto { background: var(--blanco); border: 1px solid var(--borde); border-radius: 20px; padding: 28px 22px; margin-bottom: 16px; box-shadow: var(--shadow); text-align: center; }
+  .panfleto-icon { font-size: 36px; margin-bottom: 12px; }
+  .panfleto-titulo { font-size: 11px; font-weight: 600; color: var(--azul); text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 8px; }
+  .panfleto-nombre { font-size: 22px; font-weight: 700; margin-bottom: 6px; color: var(--texto); }
+  .panfleto-meta { font-size: 14px; color: var(--texto-soft); margin-bottom: 14px; line-height: 1.5; }
+  .btn-copiar { width: 100%; padding: 14px; background: var(--azul); color: var(--blanco); border: none; border-radius: 12px; font-family: 'DM Sans', sans-serif; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+  .btn-copiar:hover { background: var(--azul-dark); }
+  .btn-copiar.copiado { background: var(--verde); }
+
+  .form-screen.hidden { display: none; }
+  .version { text-align: center; font-size: 11px; color: #ccc; padding: 16px; }
+
+  .privacidad-link { text-align: center; font-size: 11px; color: #AAB8B2; padding: 4px 16px 0; cursor: pointer; text-decoration: underline; transition: color 0.2s; }
+  .privacidad-link:hover { color: var(--azul); }
+
+  .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.visible { display: flex; }
+  .modal-box { background: var(--blanco); border-radius: 16px; padding: 24px; max-width: 420px; max-height: 80vh; overflow-y: auto; }
+  .modal-box h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--texto); }
+  .modal-box p { font-size: 13px; color: var(--texto-soft); line-height: 1.6; margin-bottom: 10px; }
+  .modal-box a { color: var(--azul); }
+  .modal-close { width: 100%; padding: 12px; background: var(--azul-light); color: var(--azul-dark); border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; }
+</style>
+  <!-- Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-T9LPLE99YX"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag("js", new Date());
+    gtag("config", "G-T9LPLE99YX");
+  </script>
+</head>
+<body>
+
+<div class="form-screen" id="formScreen">
+  <div class="page-header">
+    <h1>Nuevo TuPool</h1>
+    <p>Nuestro grupo en movimiento</p>
+  </div>
+
+  <div class="content">
+
+    <!-- Datos del pool -->
+    <div class="card">
+      <div class="field">
+        <label>Nombre del TuPool</label>
+        <input type="text" id="nombre" placeholder="Ej: Pool Hockey 7ma Metro B">
+      </div>
+      <div class="field">
+        <label>Origen / Destino</label>
+        <div class="dir-row">
+          <input type="text" id="destino" placeholder="Ej: Círculo Policial, Núñez">
+          <button class="btn-maps" onclick="buscarDestino()"><img src="maps-icon.png" width="18" height="18" style="vertical-align:middle"> Maps</button>
+        </div>
+        <div class="coords-tag" id="destino-coords"></div>
+      </div>
+      <div class="field">
+        <label>Días</label>
+        <div class="dias-grid">
+          <label class="dia-check"><input type="checkbox" value="Lunes"><span class="dia-label">Lu</span></label>
+          <label class="dia-check"><input type="checkbox" value="Martes"><span class="dia-label">Ma</span></label>
+          <label class="dia-check"><input type="checkbox" value="Miércoles" checked><span class="dia-label">Mi</span></label>
+          <label class="dia-check"><input type="checkbox" value="Jueves"><span class="dia-label">Ju</span></label>
+          <label class="dia-check"><input type="checkbox" value="Viernes"><span class="dia-label">Vi</span></label>
+          <label class="dia-check"><input type="checkbox" value="Sábado"><span class="dia-label">Sa</span></label>
+          <label class="dia-check"><input type="checkbox" value="Domingo"><span class="dia-label">Do</span></label>
+        </div>
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label>Elegí tu tramo</label>
+        <select id="tipoViaje">
+          <option value="ida-vuelta">Ida y vuelta</option>
+          <option value="round-trip">Round trip</option>
+          <option value="ida">Solo ida</option>
+          <option value="vuelta">Solo vuelta</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Familias -->
+    <div class="card">
+      <span class="seccion-label">Familias</span>
+      <div id="familias-lista"></div>
+      <button class="btn-agregar" onclick="agregarFamilia()">+ Agregar familia</button>
+    </div>
+
+    <button class="btn-crear" onclick="crearPool()">Crear TuPool →</button>
+    <div style="display:flex;gap:16px;justify-content:center"><div class="privacidad-link" onclick="document.getElementById('modalPrivacidad').classList.add('visible')">Privacidad</div><div class="privacidad-link" onclick="document.getElementById('modalInstrucciones').classList.add('visible')">Instrucciones</div></div>
+    <div class="version">v0.10</div>
+  </div>
+</div>
+
+<div class="link-screen" id="linkScreen">
+  <div class="panfleto">
+    <div class="panfleto-icon">🏒</div>
+    <div class="panfleto-titulo">TuPool creado</div>
+    <div class="panfleto-nombre" id="preview-nombre"></div>
+    <div class="panfleto-meta" id="preview-meta"></div>
+  </div>
+  <button class="btn-copiar" id="btnCopiar" onclick="copiarLink()">📋 Copiar link para compartir</button>
+  <div style="display:flex;gap:16px;justify-content:center"><div class="privacidad-link" onclick="document.getElementById('modalPrivacidad').classList.add('visible')">Privacidad</div><div class="privacidad-link" onclick="document.getElementById('modalInstrucciones').classList.add('visible')">Instrucciones</div></div>
+  <div class="version">v0.10</div>
+</div>
+
+<div class="modal-overlay" id="modalPrivacidad">
+  <div class="modal-box">
+    <h3>Aviso de Privacidad</h3>
+    <p>Los datos que completás (nombre, dirección) se utilizan únicamente para coordinar este TuPool — armar rutas y mostrar la información a las familias que participan del mismo grupo.</p>
+    <p>No se comparten con terceros, no se usan con fines comerciales, y no se almacenan más allá de lo necesario para el funcionamiento del pool.</p>
+    <p>Si querés que tus datos sean eliminados, escribinos a <a href="mailto:cpoolcontacto@gmail.com">cpoolcontacto@gmail.com</a>.</p>
+    <button class="modal-close" onclick="document.getElementById('modalPrivacidad').classList.remove('visible')">Cerrar</button>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://zvvcodeqfscqvunogppg.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2dmNvZGVxZnNjcXZ1bm9ncHBnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NTgxMTksImV4cCI6MjA5NjEzNDExOX0.CrmSFILnBGoLcpzMW9QeAI_QUqbxwRWB-CTdB4Au11Y';
+
+let familias = [];
+let linkGenerado = '';
+
+function generarToken() { return Math.random().toString(36).substring(2,10) + Math.random().toString(36).substring(2,10); }
+
+function agregarFamilia() {
+  const id = Date.now();
+  familias.push({ id, nombre: '', direccion: '', lat: null, lng: null });
+  renderFamilias();
+}
+
+function quitarFamilia(id) {
+  familias = familias.filter(f => f.id !== id);
+  renderFamilias();
+}
+
+function renderFamilias() {
+  const lista = document.getElementById('familias-lista');
+  lista.innerHTML = '';
+  familias.forEach((f, i) => {
+    const div = document.createElement('div');
+    div.className = 'familia-item';
+    div.innerHTML = `
+      <div class="familia-header">
+        <span class="familia-numero">Familia ${i + 1}</span>
+        <button class="btn-quitar" onclick="quitarFamilia(${f.id})">×</button>
+      </div>
+      <div class="familia-fields">
+        <input type="text" placeholder="Nombre de la familia" value="${f.nombre}"
+          oninput="familias.find(x=>x.id===${f.id}).nombre=this.value">
+        <div class="dir-row">
+          <input type="text" placeholder="Dirección" value="${f.direccion}" id="dir-${f.id}"
+            oninput="familias.find(x=>x.id===${f.id}).direccion=this.value">
+          <button class="btn-maps" onclick="buscarDireccionFamilia(${f.id})"><img src="maps-icon.png" width="18" height="18" style="vertical-align:middle"> Maps</button>
+        </div>
+        <div class="coords-tag ${f.lat ? 'visible' : ''}" id="coords-${f.id}">
+          ${f.lat ? `📍 ${f.lat.toFixed(4)}, ${f.lng.toFixed(4)}` : ''}
+        </div>
+      </div>
+    `;
+    lista.appendChild(div);
+  });
+}
+
+function buscarDestino() {
+  const direccion = document.getElementById('destino').value.trim();
+  if (!direccion) { alert('Ingresá el destino primero.'); return; }
+  const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion + ', Buenos Aires, Argentina')}`;
+  window.open(url, '_blank');
+}
+
+async function geocodificar(direccion) {
+  try {
+    const query = encodeURIComponent(direccion + ', Buenos Aires, Argentina');
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`);
+    const data = await res.json();
+    if (data.length > 0) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+  } catch(e) { console.warn('Geocoding fallido:', e); }
+  return { lat: null, lng: null };
+}
+
+function buscarDireccionFamilia(id) {
+  const dir = document.getElementById(`dir-${id}`).value.trim();
+  if (!dir) { alert('Ingresá la dirección primero.'); return; }
+  const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dir + ', Buenos Aires, Argentina')}`;
+  window.open(url, '_blank');
+}
+
+async function crearPool() {
+  const nombre = document.getElementById('nombre').value.trim();
+  const destino = document.getElementById('destino').value.trim();
+  const tipoViaje = document.getElementById('tipoViaje').value;
+  const dias = [...document.querySelectorAll('.dia-check input:checked')].map(c => c.value);
+
+  if (!nombre) { alert('Ingresá el nombre del pool.'); return; }
+  if (!destino) { alert('Ingresá el destino.'); return; }
+  if (dias.length === 0) { alert('Seleccioná al menos un día.'); return; }
+  if (familias.length === 0) { alert('Agregá al menos una familia.'); return; }
+  if (familias.some(f => !f.nombre.trim())) { alert('Todas las familias deben tener nombre.'); return; }
+
+  const token = generarToken();
+  const poolId = 'pool-' + token;
+
+  // Geocoding del destino
+  const destinoCoords = await geocodificar(destino);
+
+  try {
+    const resPool = await fetch(`${SUPABASE_URL}/rest/v1/pools`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Prefer': 'return=representation' },
+      body: JSON.stringify({ id: poolId, key: poolId, nombre, destino, dias: dias.join(','), tipo_viaje: tipoViaje, link_token: token })
+    });
+    if (!resPool.ok) throw new Error(await resPool.text());
+    const poolData = await resPool.json();
+    const poolIdReturned = poolData[0].id;
+
+    for (const f of familias) {
+      const famCoords = f.direccion ? await geocodificar(f.direccion) : { lat: null, lng: null };
+      await fetch(`${SUPABASE_URL}/rest/v1/participantes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
+        body: JSON.stringify({ pool_id: poolIdReturned, nombre: f.nombre.trim(), direccion: f.direccion.trim() || null, lat: famCoords.lat, lng: famCoords.lng, activa: true })
+      });
+    }
+
+    mostrarExito(nombre, destino, dias, tipoViaje, token, poolId);
+  } catch(e) {
+    console.error(e);
+    alert('Error al crear el pool. Revisá la consola.');
+  }
+}
+
+function mostrarExito(nombre, destino, dias, tipoViaje, token, poolId) {
+  linkGenerado = `${window.location.origin}/indexbranch.html?pool=${poolId}`;
+  document.getElementById('preview-nombre').textContent = nombre;
+  const diasStr = dias.join(' · ');
+  const tipoStr = { 'ida-vuelta': 'Ida y vuelta', 'round-trip': 'Round trip', 'ida': 'Solo ida', 'vuelta': 'Solo vuelta' }[tipoViaje];
+  document.getElementById('preview-meta').textContent = `${destino} · ${diasStr} · ${tipoStr}`;
+  document.getElementById('formScreen').classList.add('hidden');
+  document.getElementById('linkScreen').classList.add('visible');
+}
+
+function copiarLink() {
+  navigator.clipboard.writeText(linkGenerado).then(() => {
+    const btn = document.getElementById('btnCopiar');
+    btn.textContent = '✅ Link copiado';
+    btn.classList.add('copiado');
+    setTimeout(() => { btn.textContent = '📋 Copiar link para compartir'; btn.classList.remove('copiado'); }, 2000);
+  });
+}
+
+// Arrancar con una familia vacía
+agregarFamilia();
+</script>
+<div class="modal-overlay" id="modalInstrucciones">
+  <div class="modal-box">
+    <h3>¿Cómo funciona TuPool?</h3>
+    <p><b>TuPool</b> — Nuestro grupo en movimiento</p>
+    <p style="margin-top:8px;font-style:italic">Una herramienta para que tu grupo de siempre coordine sus viajes recurrentes — entrenamientos, clases, actividades semanales.</p>
+    <p style="margin-top:12px"><b>1.</b> Se crea el TuPool con nombre, origen/destino, días y tipo de viaje. Se agregan las familias del grupo.</p>
+    <p style="margin-top:6px"><b>2.</b> Se genera un link único para compartir con todas las familias del grupo.</p>
+    <p style="margin-top:6px"><b>3.</b> Cada familia marca su disponibilidad — qué días puede manejar y qué días necesita que la lleven.</p>
+    <p style="margin-top:6px"><b>4.</b> El pool se organiza solo — semana a semana, sin coordinación manual.</p>
+    <button class="modal-close" onclick="document.getElementById('modalInstrucciones').classList.remove('visible')">Cerrar</button>
+  </div>
+</div>
+</body>
+</html>
