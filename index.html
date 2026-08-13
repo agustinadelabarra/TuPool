@@ -364,6 +364,9 @@
     <option value="">¿Quién sos?</option>
   </select>
   <a class="btn-mapa" href="#" onclick="abrirMapa(event)"><img src="maps-icon.png" width="24" height="24" style="display:block;" alt="Maps"></a>
+  <a class="btn-mapa" id="btnSettings" href="#" title="Editar pool">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.604.852 1.001 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+  </a>
 </div>
 
 <div class="nav-mes">
@@ -383,7 +386,8 @@
 </div>
 
 <div style="display:flex;gap:16px;justify-content:center;margin-bottom:4px"><div class="privacidad-link" onclick="document.getElementById('modalPrivacidad').classList.add('visible')">Privacidad</div><div class="privacidad-link" onclick="document.getElementById('modalInstrucciones').classList.add('visible')">Instrucciones</div></div>
-<div class="version">v1.3-db</div>
+<div class="version">v1.6-db</div>
+<div style="text-align:center;font-size:11px;color:#2E6DA4;padding:0 16px 16px">Powered by <a href="https://vertexsur.com" target="_blank" style="color:#2E6DA4;font-weight:700;text-decoration:none">VertexSur</a></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -443,6 +447,8 @@ if (!poolKey) {
     </div>`;
   throw new Error("Pool no especificado");
 }
+
+document.getElementById("btnSettings").href = `tupools.html?editar=${encodeURIComponent(poolKey)}`;
 
 const VERSION = "1.0-db";
 const MESES = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
@@ -742,15 +748,17 @@ function abrirMapa(e) {
   let url;
   if (isMobile) {
     const waypointList = activas.map(f => {
+      if (f.direccion) return encodeURIComponent(f.direccion + ", CABA, Argentina");
       if (f.lat && f.lng) return `${f.lat},${f.lng}`;
-      return encodeURIComponent((f.direccion || "") + ", CABA, Argentina");
-    });
+      return '';
+    }).filter(Boolean);
     url = `https://maps.google.com/maps/dir/?api=1&waypoints=${waypointList.join("|")}&travelmode=driving`;
   } else {
     const waypoints = activas.map(f => {
+      if (f.direccion) return encodeURIComponent(f.direccion + ", CABA, Argentina");
       if (f.lat && f.lng) return `${f.lat},${f.lng}`;
-      return encodeURIComponent((f.direccion || "") + ", CABA, Argentina");
-    }).join("/");
+      return '';
+    }).filter(Boolean).join("/");
     url = `https://www.google.com/maps/dir/${waypoints}`;
   }
   window.open(url, "_blank");

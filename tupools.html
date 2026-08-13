@@ -50,12 +50,29 @@
   .familia-fields input { width: 100%; padding: 10px 12px; border: 1.5px solid var(--borde); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--texto); background: var(--blanco); outline: none; transition: border-color 0.2s; }
   .familia-fields input:focus { border-color: var(--azul); }
   .familia-fields input::placeholder { color: #AAB8B2; }
-  .dir-row { display: flex; gap: 8px; align-items: center; }
+  .dir-row { display: flex; gap: 8px; align-items: flex-end; }
   .dir-row input { flex: 1; }
-  .btn-maps { padding: 10px 12px; background: var(--verde-light); border: 1.5px solid var(--verde); border-radius: 10px; color: var(--verde-dark); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
+  .btn-maps { padding: 10px 12px; background: var(--verde-light); border: 1.5px solid var(--verde); border-radius: 10px; color: var(--verde-dark); font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: all 0.2s; font-family: 'DM Sans', sans-serif; height: 42px; }
   .btn-maps:hover { background: var(--verde); color: var(--blanco); }
+  .maps-col { display: flex; flex-direction: column; align-items: center; gap: 3px; flex-shrink: 0; }
+  .maps-label { font-size: 10px; font-weight: 700; color: var(--verde-dark); text-transform: uppercase; letter-spacing: 0.04em; white-space: nowrap; }
+
+  /* Excepciones */
+  .excepcion-item { border: 1.5px solid var(--borde); border-radius: 12px; padding: 12px; margin-bottom: 8px; background: var(--fondo); }
+  .excepcion-row { display: flex; gap: 8px; margin-bottom: 6px; }
+  .excepcion-row input, .excepcion-row select { padding: 8px 10px; border: 1.5px solid var(--borde); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 13px; background: var(--blanco); }
+  .excepcion-row select { color: var(--texto); }
+  .estado-Activa { color: var(--verde-dark); }
+  .estado-Warning { color: #a67c00; }
+  .estado-Cancelada { color: #c0392b; }
+
+  .warning-box { background: #FFF4E5; border: 1.5px solid #E9A94A; border-radius: 10px; padding: 10px 12px; font-size: 12px; color: #8a5a00; margin-top: 8px; display: none; }
+  .warning-box.visible { display: block; }
   .coords-tag { font-size: 11px; color: var(--verde-dark); background: var(--verde-light); padding: 4px 8px; border-radius: 6px; margin-top: 4px; display: none; }
   .coords-tag.visible { display: block; }
+  .btn-confirmar-si, .btn-confirmar-no { margin-top: 6px; margin-right: 6px; padding: 6px 10px; border-radius: 8px; border: none; font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .btn-confirmar-si { background: var(--verde); color: white; }
+  .btn-confirmar-no { background: #eee; color: var(--texto-soft); }
 
   .btn-agregar { width: 100%; padding: 12px; background: var(--blanco); border: 1.5px dashed var(--azul); border-radius: 12px; color: var(--azul); font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; margin-top: 10px; }
   .btn-agregar:hover { background: var(--azul-light); }
@@ -78,6 +95,9 @@
 
   .form-screen.hidden { display: none; }
   .version { text-align: center; font-size: 11px; color: #ccc; padding: 16px; }
+  .powered-by { text-align: center; font-size: 11px; color: #2E6DA4; padding: 0 16px 16px; }
+  .powered-by a { color: #2E6DA4; font-weight: 700; text-decoration: none; }
+  .powered-by a:hover { text-decoration: underline; }
 
   .privacidad-link { text-align: center; font-size: 11px; color: #AAB8B2; padding: 4px 16px 0; cursor: pointer; text-decoration: underline; transition: color 0.2s; }
   .privacidad-link:hover { color: var(--azul); }
@@ -118,8 +138,8 @@
       <div class="field">
         <label>Origen / Destino</label>
         <div class="dir-row">
-          <input type="text" id="destino" placeholder="Ej: Círculo Policial, Núñez">
-          <button class="btn-maps" onclick="buscarDestino()"><img src="maps-icon.png" width="18" height="18" style="vertical-align:middle"> Maps</button>
+          <input type="text" id="destino" placeholder="Ej: Círculo Policial, Núñez" onblur="buscarNominatimDestino()">
+          <div class="maps-col"><span class="maps-label">Ver en mapa</span><button type="button" class="btn-maps" onclick="verEnMapaDestino()"><img src="maps-icon.png" width="18" height="18" style="vertical-align:middle"></button></div>
         </div>
         <div class="coords-tag" id="destino-coords"></div>
       </div>
@@ -153,9 +173,18 @@
       <button class="btn-agregar" onclick="agregarFamilia()">+ Agregar familia</button>
     </div>
 
-    <button class="btn-crear" onclick="crearPool()">Crear TuPool →</button>
+    <!-- Excepciones (solo modo edición) -->
+    <div class="card" id="cardExcepciones" style="display:none">
+      <span class="seccion-label">Excepciones de fecha</span>
+      <div id="excepciones-lista"></div>
+      <button class="btn-agregar" onclick="agregarExcepcion()">+ Agregar excepción</button>
+    </div>
+
+    <div class="warning-box" id="warningBox"></div>
+    <button class="btn-crear" id="btnAccion" onclick="crearPool()">Crear TuPool →</button>
     <div style="display:flex;gap:16px;justify-content:center"><div class="privacidad-link" onclick="document.getElementById('modalPrivacidad').classList.add('visible')">Privacidad</div><div class="privacidad-link" onclick="document.getElementById('modalInstrucciones').classList.add('visible')">Instrucciones</div></div>
-    <div class="version">v0.10</div>
+    <div class="version">v0.20</div>
+    <div class="powered-by">Powered by <a href="https://vertexsur.com" target="_blank">VertexSur</a></div>
   </div>
 </div>
 
@@ -168,7 +197,8 @@
   </div>
   <button class="btn-copiar" id="btnCopiar" onclick="copiarLink()">📋 Copiar link para compartir</button>
   <div style="display:flex;gap:16px;justify-content:center"><div class="privacidad-link" onclick="document.getElementById('modalPrivacidad').classList.add('visible')">Privacidad</div><div class="privacidad-link" onclick="document.getElementById('modalInstrucciones').classList.add('visible')">Instrucciones</div></div>
-  <div class="version">v0.10</div>
+  <div class="version">v0.20</div>
+  <div class="powered-by">Powered by <a href="https://vertexsur.com" target="_blank">VertexSur</a></div>
 </div>
 
 <div class="modal-overlay" id="modalPrivacidad">
@@ -187,16 +217,212 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 
 let familias = [];
 let linkGenerado = '';
+let destinoConfirmado = null; // { lat, lng } solo si el usuario confirmó
+
+// ── MODO EDICIÓN ─────────────────────────────────────────────────
+const params = new URLSearchParams(window.location.search);
+const poolIdEdit = params.get('editar') || '';
+const MODO_EDICION = !!poolIdEdit;
+
+let excepciones = [];
+let excepcionesEliminadas = [];
+let familiasEliminadas = [];
+let originalTipoViaje = '';
+let originalDias = [];
 
 function generarToken() { return Math.random().toString(36).substring(2,10) + Math.random().toString(36).substring(2,10); }
 
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+async function sbGet(table, qs = '') {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${qs}`, {
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+  });
+  if (!res.ok) throw new Error(`Error ${res.status} en ${table}`);
+  return res.json();
+}
+
+async function sbPatch(table, filter, body) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${filter}`, {
+    method: 'PATCH',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) {
+    const detalle = await res.text();
+    console.error(`Detalle Supabase (${table}):`, detalle);
+    throw new Error(`Error ${res.status} al actualizar ${table}: ${detalle}`);
+  }
+}
+
+async function sbPost(table, body) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json', 'Prefer': 'return=representation' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error(`Error ${res.status} al crear en ${table}`);
+  return res.json();
+}
+
+async function sbDelete(table, filter) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?${filter}`, {
+    method: 'DELETE',
+    headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+  });
+  if (!res.ok) throw new Error(`Error ${res.status} al borrar en ${table}`);
+}
+
+async function cargarDatosEdicion() {
+  try {
+    const pools = await sbGet('pools', `?id=eq.${encodeURIComponent(poolIdEdit)}`);
+    if (!pools.length) { alert('No se encontró el pool.'); return; }
+    const pool = pools[0];
+
+    document.getElementById('nombre').value = pool.nombre || '';
+    document.getElementById('destino').value = pool.destino || '';
+    document.getElementById('tipoViaje').value = pool.tipo_viaje || 'ida-vuelta';
+    originalTipoViaje = pool.tipo_viaje || 'ida-vuelta';
+
+    const diasArr = (pool.dias || '').split(',').filter(Boolean);
+    originalDias = diasArr;
+    document.querySelectorAll('.dia-check input').forEach(chk => {
+      chk.checked = diasArr.includes(chk.value);
+    });
+
+    const participantes = await sbGet('participantes', `?pool_id=eq.${encodeURIComponent(poolIdEdit)}&activa=eq.true`);
+    familias = participantes.map(p => ({ id: p.id, nombre: p.nombre || '', direccion: p.direccion || '', lat: p.lat, lng: p.lng, esNueva: false }));
+    if (familias.length === 0) agregarFamilia();
+    renderFamilias();
+
+    const fp = await sbGet('fechas_pool', `?pool_id=eq.${encodeURIComponent(poolIdEdit)}&order=fecha`);
+    excepciones = fp.map(e => ({ id: e.id, fecha: e.fecha, estado: e.estado || 'Activa', motivo: e.motivo || '', nota: e.nota || '', esNueva: false }));
+    renderExcepciones();
+
+    document.querySelector('.page-header h1').textContent = 'Editar TuPool';
+    document.getElementById('btnAccion').textContent = 'Guardar cambios';
+    document.getElementById('btnAccion').onclick = guardarEdicion;
+    document.getElementById('cardExcepciones').style.display = 'block';
+
+  } catch(e) {
+    console.error(e);
+    alert('Error al cargar el pool para editar. Revisá la consola.');
+  }
+}
+
+function agregarExcepcion() {
+  excepciones.push({ id: null, fecha: '', estado: 'Activa', motivo: '', nota: '', esNueva: true });
+  renderExcepciones();
+}
+
+function quitarExcepcion(idx) {
+  const exc = excepciones[idx];
+  if (exc.id) excepcionesEliminadas.push(exc.id);
+  excepciones.splice(idx, 1);
+  renderExcepciones();
+}
+
+function renderExcepciones() {
+  const lista = document.getElementById('excepciones-lista');
+  lista.innerHTML = '';
+  excepciones.forEach((e, i) => {
+    const div = document.createElement('div');
+    div.className = 'excepcion-item';
+    div.innerHTML = `
+      <div class="excepcion-row">
+        <input type="date" value="${e.fecha ? e.fecha.substring(0,10) : ''}" oninput="excepciones[${i}].fecha=this.value" style="flex:1">
+        <select oninput="excepciones[${i}].estado=this.value" class="estado-${e.estado}">
+          <option value="Activa" ${e.estado==='Activa'?'selected':''}>✅ Activa</option>
+          <option value="Warning" ${e.estado==='Warning'?'selected':''}>⚠️ Warning</option>
+          <option value="Cancelada" ${e.estado==='Cancelada'?'selected':''}>❌ Cancelada</option>
+        </select>
+        <button class="btn-quitar" onclick="quitarExcepcion(${i})">×</button>
+      </div>
+      <input type="text" placeholder="Motivo (ej: feriado)" value="${esc(e.motivo)}" oninput="excepciones[${i}].motivo=this.value" style="width:100%;margin-bottom:6px;padding:8px 10px;border:1.5px solid var(--borde);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--blanco)">
+      <input type="text" placeholder="Nota adicional" value="${esc(e.nota)}" oninput="excepciones[${i}].nota=this.value" style="width:100%;padding:8px 10px;border:1.5px solid var(--borde);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;background:var(--blanco)">
+    `;
+    lista.appendChild(div);
+  });
+}
+
+function hayWarning() {
+  const tipoActual = document.getElementById('tipoViaje').value;
+  const diasActuales = [...document.querySelectorAll('.dia-check input:checked')].map(c => c.value);
+  const cambioTipo = tipoActual !== originalTipoViaje;
+  const diasSacados = originalDias.filter(d => !diasActuales.includes(d));
+  return { cambioTipo, diasSacados, hay: cambioTipo || diasSacados.length > 0 };
+}
+
+async function guardarEdicion() {
+  const nombre = document.getElementById('nombre').value.trim();
+  const destino = document.getElementById('destino').value.trim();
+  const tipoViaje = document.getElementById('tipoViaje').value;
+  const dias = [...document.querySelectorAll('.dia-check input:checked')].map(c => c.value);
+
+  if (!nombre) { alert('Ingresá el nombre del pool.'); return; }
+  if (!destino) { alert('Ingresá el destino.'); return; }
+  if (dias.length === 0) { alert('Seleccioná al menos un día.'); return; }
+  if (familias.some(f => !f.nombre.trim())) { alert('Todas las familias deben tener nombre.'); return; }
+
+  const warn = hayWarning();
+  if (warn.hay) {
+    const warningBox = document.getElementById('warningBox');
+    let msg = '⚠️ Al guardar se puede perder disponibilidad ya cargada: ';
+    const partes = [];
+    if (warn.cambioTipo) partes.push('cambiaste el tipo de viaje');
+    if (warn.diasSacados.length) partes.push(`sacaste ${warn.diasSacados.join(', ')}`);
+    msg += partes.join(' y ') + '. ¿Confirmás guardar igual?';
+    if (!confirm(msg)) return;
+  }
+
+  try {
+    await sbPatch('pools', `id=eq.${encodeURIComponent(poolIdEdit)}`, {
+      nombre, destino, dias: dias.join(','), tipo_viaje: tipoViaje,
+      ...(destinoConfirmado ? { lat: destinoConfirmado.lat, lng: destinoConfirmado.lng } : {})
+    });
+
+    for (const f of familias) {
+      const coords = f.confirmada ? { lat: f.lat, lng: f.lng } : { lat: f.lat ?? null, lng: f.lng ?? null };
+      if (f.esNueva) {
+        await sbPost('participantes', { pool_id: poolIdEdit, nombre: f.nombre.trim(), direccion: f.direccion.trim() || null, lat: coords.lat, lng: coords.lng, activa: true });
+      } else {
+        await sbPatch('participantes', `id=eq.${f.id}`, { nombre: f.nombre.trim(), direccion: f.direccion.trim() || null, ...(f.confirmada ? { lat: coords.lat, lng: coords.lng } : {}) });
+      }
+    }
+    for (const id of familiasEliminadas) {
+      await sbPatch('participantes', `id=eq.${id}`, { activa: false });
+    }
+
+    for (const e of excepciones) {
+      if (!e.fecha) continue;
+      if (e.esNueva) {
+        await sbPost('fechas_pool', { pool_id: poolIdEdit, fecha: e.fecha, estado: e.estado, motivo: e.motivo || null, nota: e.nota || null });
+      } else {
+        await sbPatch('fechas_pool', `id=eq.${e.id}`, { fecha: e.fecha, estado: e.estado, motivo: e.motivo || null, nota: e.nota || null });
+      }
+    }
+    for (const id of excepcionesEliminadas) {
+      await sbDelete('fechas_pool', `id=eq.${id}`);
+    }
+
+    window.location.href = `indexbranch.html?pool=${encodeURIComponent(poolIdEdit)}`;
+  } catch(e) {
+    console.error(e);
+    alert('Error al guardar los cambios. Revisá la consola.');
+  }
+}
+
 function agregarFamilia() {
-  const id = Date.now();
-  familias.push({ id, nombre: '', direccion: '', lat: null, lng: null });
+  const id = String(Date.now());
+  familias.push({ id, nombre: '', direccion: '', lat: null, lng: null, confirmada: false, esNueva: true });
   renderFamilias();
 }
 
 function quitarFamilia(id) {
+  const f = familias.find(x => x.id === id);
+  if (f && !f.esNueva && MODO_EDICION) familiasEliminadas.push(f.id);
   familias = familias.filter(f => f.id !== id);
   renderFamilias();
 }
@@ -210,30 +436,54 @@ function renderFamilias() {
     div.innerHTML = `
       <div class="familia-header">
         <span class="familia-numero">Familia ${i + 1}</span>
-        <button class="btn-quitar" onclick="quitarFamilia(${f.id})">×</button>
+        <button class="btn-quitar" onclick="quitarFamilia('${f.id}')">×</button>
       </div>
       <div class="familia-fields">
-        <input type="text" placeholder="Nombre de la familia" value="${f.nombre}"
-          oninput="familias.find(x=>x.id===${f.id}).nombre=this.value">
+        <input type="text" placeholder="Nombre de la familia" value="${esc(f.nombre)}"
+          oninput="familias.find(x=>x.id==='${f.id}').nombre=this.value">
         <div class="dir-row">
-          <input type="text" placeholder="Dirección" value="${f.direccion}" id="dir-${f.id}"
-            oninput="familias.find(x=>x.id===${f.id}).direccion=this.value">
-          <button class="btn-maps" onclick="buscarDireccionFamilia(${f.id})"><img src="maps-icon.png" width="18" height="18" style="vertical-align:middle"> Maps</button>
+          <input type="text" placeholder="Dirección" value="${esc(f.direccion)}" id="dir-${f.id}"
+            oninput="familias.find(x=>x.id==='${f.id}').direccion=this.value" onblur="buscarNominatimFamilia('${f.id}')">
+          <div class="maps-col"><span class="maps-label">Ver en mapa</span><button type="button" class="btn-maps" onclick="verEnMapaFamilia('${f.id}')"><img src="maps-icon.png" width="18" height="18" style="vertical-align:middle"></button></div>
         </div>
         <div class="coords-tag ${f.lat ? 'visible' : ''}" id="coords-${f.id}">
           ${f.lat ? `📍 ${f.lat.toFixed(4)}, ${f.lng.toFixed(4)}` : ''}
         </div>
+        <div class="coords-tag" id="confirm-${f.id}"></div>
       </div>
     `;
     lista.appendChild(div);
   });
 }
 
-function buscarDestino() {
+function verEnMapaDestino() {
   const direccion = document.getElementById('destino').value.trim();
   if (!direccion) { alert('Ingresá el destino primero.'); return; }
   const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion + ', Buenos Aires, Argentina')}`;
   window.open(url, '_blank');
+}
+
+async function buscarNominatimDestino() {
+  const direccion = document.getElementById('destino').value.trim();
+  const tag = document.getElementById('destino-coords');
+  if (!direccion) { tag.classList.remove('visible'); return; }
+  destinoConfirmado = null;
+  tag.classList.add('visible');
+  tag.innerHTML = 'Buscando dirección…';
+  const candidatos = await geocodificarCandidatos(direccion);
+  if (candidatos.length === 0) {
+    tag.innerHTML = '⚠️ No pudimos encontrar esta dirección. Podés guardar igual, sin coordenadas.';
+    return;
+  }
+  tag.innerHTML = '<b>Elegí la dirección correcta:</b><br>' +
+    candidatos.map((c, i) => `
+      <label style="display:block;margin:4px 0;font-weight:400;">
+        <input type="radio" name="destino-opcion" onclick='confirmarDestino(${c.lat},${c.lng})'> ${esc(c.display)}
+      </label>`).join('');
+}
+
+function confirmarDestino(lat, lng) {
+  destinoConfirmado = { lat, lng };
 }
 
 async function geocodificar(direccion) {
@@ -241,16 +491,50 @@ async function geocodificar(direccion) {
     const query = encodeURIComponent(direccion + ', Buenos Aires, Argentina');
     const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`);
     const data = await res.json();
-    if (data.length > 0) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+    if (data.length > 0) return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), display: data[0].display_name };
   } catch(e) { console.warn('Geocoding fallido:', e); }
-  return { lat: null, lng: null };
+  return { lat: null, lng: null, display: null };
 }
 
-function buscarDireccionFamilia(id) {
+async function geocodificarCandidatos(direccion, limit = 5) {
+  try {
+    const query = encodeURIComponent(direccion + ', Buenos Aires, Argentina');
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=${limit}`);
+    const data = await res.json();
+    return data.map(d => ({ lat: parseFloat(d.lat), lng: parseFloat(d.lon), display: d.display_name }));
+  } catch(e) { console.warn('Geocoding fallido:', e); return []; }
+}
+
+function verEnMapaFamilia(id) {
   const dir = document.getElementById(`dir-${id}`).value.trim();
   if (!dir) { alert('Ingresá la dirección primero.'); return; }
   const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(dir + ', Buenos Aires, Argentina')}`;
   window.open(url, '_blank');
+}
+
+async function buscarNominatimFamilia(id) {
+  const dir = document.getElementById(`dir-${id}`).value.trim();
+  const tag = document.getElementById(`confirm-${id}`);
+  const f = familias.find(x => x.id === id);
+  if (!dir) { tag.classList.remove('visible'); return; }
+  f.confirmada = false;
+  tag.classList.add('visible');
+  tag.innerHTML = 'Buscando dirección…';
+  const candidatos = await geocodificarCandidatos(dir);
+  if (candidatos.length === 0) {
+    tag.innerHTML = '⚠️ No pudimos encontrar esta dirección. Podés guardar igual, sin coordenadas.';
+    return;
+  }
+  tag.innerHTML = '<b>Elegí la dirección correcta:</b><br>' +
+    candidatos.map((c, i) => `
+      <label style="display:block;margin:4px 0;font-weight:400;">
+        <input type="radio" name="familia-opcion-${id}" onclick='confirmarFamilia("${id}",${c.lat},${c.lng})'> ${esc(c.display)}
+      </label>`).join('');
+}
+
+function confirmarFamilia(id, lat, lng) {
+  const f = familias.find(x => x.id === id);
+  f.lat = lat; f.lng = lng; f.confirmada = true;
 }
 
 async function crearPool() {
@@ -268,25 +552,21 @@ async function crearPool() {
   const token = generarToken();
   const poolId = 'pool-' + token;
 
-  // Geocoding del destino
-  const destinoCoords = await geocodificar(destino);
-
   try {
     const resPool = await fetch(`${SUPABASE_URL}/rest/v1/pools`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Prefer': 'return=representation' },
-      body: JSON.stringify({ id: poolId, key: poolId, nombre, destino, dias: dias.join(','), tipo_viaje: tipoViaje, link_token: token })
+      body: JSON.stringify({ id: poolId, key: poolId, nombre, destino, dias: dias.join(','), tipo_viaje: tipoViaje, link_token: token, lat: destinoConfirmado ? destinoConfirmado.lat : null, lng: destinoConfirmado ? destinoConfirmado.lng : null })
     });
     if (!resPool.ok) throw new Error(await resPool.text());
     const poolData = await resPool.json();
     const poolIdReturned = poolData[0].id;
 
     for (const f of familias) {
-      const famCoords = f.direccion ? await geocodificar(f.direccion) : { lat: null, lng: null };
       await fetch(`${SUPABASE_URL}/rest/v1/participantes`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` },
-        body: JSON.stringify({ pool_id: poolIdReturned, nombre: f.nombre.trim(), direccion: f.direccion.trim() || null, lat: famCoords.lat, lng: famCoords.lng, activa: true })
+        body: JSON.stringify({ pool_id: poolIdReturned, nombre: f.nombre.trim(), direccion: f.direccion.trim() || null, lat: f.confirmada ? f.lat : null, lng: f.confirmada ? f.lng : null, activa: true })
       });
     }
 
@@ -316,8 +596,12 @@ function copiarLink() {
   });
 }
 
-// Arrancar con una familia vacía
-agregarFamilia();
+// Arranque: modo edición carga datos existentes, modo creación arranca con una familia vacía
+if (MODO_EDICION) {
+  cargarDatosEdicion();
+} else {
+  agregarFamilia();
+}
 </script>
 <div class="modal-overlay" id="modalInstrucciones">
   <div class="modal-box">
